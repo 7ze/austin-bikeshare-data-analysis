@@ -1,6 +1,5 @@
 import os
 import json
-import pickle
 from datetime import datetime
 from google.cloud import pubsub_v1
 from google.cloud import bigquery
