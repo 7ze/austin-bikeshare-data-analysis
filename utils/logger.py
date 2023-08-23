@@ -1,5 +1,7 @@
 import logging
+from dotenv import dotenv_values
 
+env_config = dotenv_values(".env")
 
 class CustomFormatter(logging.Formatter):
     COLORS = {
@@ -21,7 +23,7 @@ class CustomFormatter(logging.Formatter):
 
 
 def setup_logger():
-    logger = logging.getLogger("austin bikeshare data analysis")
+    logger = logging.getLogger(env_config["PROJECT_ID"])
     logger.setLevel(logging.DEBUG)
     ch = logging.StreamHandler()
     ch.setLevel(logging.DEBUG)
