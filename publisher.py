@@ -1,20 +1,25 @@
 import os
 import json
+import pandas as pd
+from dotenv import load_dotenv
 from datetime import datetime
 from google.cloud import pubsub_v1
 from google.cloud import bigquery
 
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "C:/Users/Administrator/Downloads/austin-bikeshare-data-analysis-6736edcb4391.json"
+load_dotenv()
+os.environ[
+    "GOOGLE_APPLICATION_CREDENTIALS"
+] = os.getenv("CERDENTIALS_PATH")
 
 # os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "{give_path_to_your_gcp_credentials_file}"
-# Set your Google Cloud project ID and topic name 
-project_id = "austin-bikeshare-data-analysis"
-topic_name = "austin-bikeshare-data"
+# Set your Google Cloud project ID and topic name
+project_id = os.getenv("PROJECT_ID")
+topic_name = os.getenv("TOPIC_NAME")
 
 # Creting bigquerey.Client instance
 client = bigquery.Client()
-dataset_id = "bigquery-public-data.austin_bikeshare"
-table_id = "bigquery-public-data.austin_bikeshare.bikeshare_trips"
+dataset_id = os.getenv("DATASET_ID")
+table_id =  os.getenv("TABLE_ID")
 query = f"SELECT * FROM `{table_id}` LIMIT 10"
 query_job = client.query(query)
 rows = query_job.result()
@@ -39,5 +44,3 @@ print(f"Published message: {json_data}")
 # Wait for the publish to complete
 future.result()
 print("Message published.")
-
-
