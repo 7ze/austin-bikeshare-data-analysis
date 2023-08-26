@@ -36,6 +36,7 @@ from dotenv import dotenv_values
 import random
 import json
 import time
+import sys
 
 env_config = dotenv_values(".env")
 
@@ -104,7 +105,7 @@ if __name__ == "__main__":
     output_topic = (
         known_args.output_topic
         if known_args.output_topic is not None
-        else env_config.get("OUTPUT_TOPIC")
+        else env_config.get("TOPIC_ID")
     )
     rows_limit = (
         known_args.rows_limit
@@ -131,7 +132,7 @@ if __name__ == "__main__":
         print(f"Number of rows to be queried:           {rows_limit}")
         print(f"Maximum possible offset in mins:        {max_offset_mins}")
         print(f"Maximum sleep time in seconds:          {max_sleep_seconds}")
-        exit()
+        sys.exit(0)
     rows = fetch_data_from_bigquery(data_source, rows_limit)
     transform_and_publish(
         rows, date_column, max_offset_mins, output_topic, max_sleep_seconds

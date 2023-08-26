@@ -8,6 +8,7 @@ OUTPUT_TOPIC_FLAG = "-t"
 ROWS_LIMIT_FLAG = "-r"
 MAX_OFFSET_MINS_FLAG = "-m"
 MAX_SLEEP_SECONDS_FLAG = "-x"
+INPUT_TOPIC_FLAG = "-i"
 
 # descriptions
 NO_OP_DESC = "dry run, does not perform any operation, purely for debugging"
@@ -17,11 +18,13 @@ OUTPUT_TOPIC_DESC = "pub/sub topic to publish to"
 ROWS_LIMIT_DESC = "number of rows to query from data source"
 MAX_OFFSET_MINS_DESC = "maximum offset limit in minutes"
 MAX_SLEEP_SECONDS_DESC = "maximum sleep limit in seconds"
+INPUT_TOPIC_DESC = "pub/sub topic to read from"
 
 
 def setup_parser_main():
     parser = ArgumentParser(description="austin bikeshare data analysis pipeline")
     parser.add_argument(NO_OP_FLAG, "--no-op", help=NO_OP_DESC, action="store_true")
+    parser.add_argument(INPUT_TOPIC_FLAG, "--input-topic", help=INPUT_TOPIC_DESC)
     args = parser.parse_known_args()
     return args
 
