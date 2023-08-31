@@ -2,13 +2,10 @@ import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from apache_beam.options.pipeline_options import StandardOptions
-from dotenv import dotenv_values
 from utils.logger import setup_logger
 import json
 import sys
 import os
-
-env_config = dotenv_values(".env")
 
 
 def run(pipeline_options, logger, input_topic):
@@ -40,11 +37,7 @@ def main(known_args, options):
     pipeline_options.view_as(SetupOptions).save_main_session = True
     pipeline_options.view_as(StandardOptions).streaming = True
 
-    input_topic = (
-        known_args.input_topic
-        if known_args.input_topic is not None
-        else env_config.get("TOPIC_ID")
-    )
+    input_topic = known_args.input_topic
 
     # todo: implement no-op
     if known_args.no_op:

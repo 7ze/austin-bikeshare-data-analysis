@@ -32,13 +32,10 @@ from google.cloud import bigquery
 from google.cloud import pubsub_v1
 from datetime import datetime, timedelta
 from utils.parser import setup_parser_publisher
-from dotenv import dotenv_values
 import random
 import json
 import time
 import sys
-
-env_config = dotenv_values(".env")
 
 
 def sleep_random(max_sleep_seconds):
@@ -92,36 +89,12 @@ def transform_and_publish(
 
 if __name__ == "__main__":
     (known_args, _) = setup_parser_publisher()
-    data_source = (
-        known_args.data_source
-        if known_args.data_source is not None
-        else env_config.get("DATA_SOURCE")
-    )
-    date_column = (
-        known_args.date_column
-        if known_args.date_column is not None
-        else env_config.get("DATE_COLUMN")
-    )
-    output_topic = (
-        known_args.output_topic
-        if known_args.output_topic is not None
-        else env_config.get("TOPIC_ID")
-    )
-    rows_limit = (
-        known_args.rows_limit
-        if known_args.rows_limit is not None
-        else int(env_config.get("ROWS_LIMIT") or 0)
-    )
-    max_offset_mins = (
-        known_args.max_offset_mins
-        if known_args.max_offset_mins is not None
-        else int(env_config.get("MAX_OFFSET_MINS") or 0)
-    )
-    max_sleep_seconds = (
-        known_args.max_sleep_seconds
-        if known_args.max_sleep_seconds is not None
-        else int(env_config.get("MAX_SLEEP_SECONDS") or 0)
-    )
+    data_source = known_args.data_source
+    date_column = known_args.date_column
+    output_topic = known_args.output_topic
+    rows_limit = known_args.rows_limit
+    max_offset_mins = known_args.max_offset_mins
+    max_sleep_seconds = known_args.max_sleep_seconds
     if known_args.no_op:
         print("\nNo-op mode enabled. No data will be published.")
         print("Configuration values are as follows:")

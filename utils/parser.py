@@ -1,14 +1,17 @@
 from argparse import ArgumentParser
+from dotenv import dotenv_values
+
+env_config = dotenv_values(".env")
 
 # flags
-NO_OP_FLAG = "-n"
-DATA_SOURCE_FLAG = "-s"
-DATE_COLUMN_FLAG = "-d"
-OUTPUT_TOPIC_FLAG = "-t"
-ROWS_LIMIT_FLAG = "-r"
-MAX_OFFSET_MINS_FLAG = "-m"
-MAX_SLEEP_SECONDS_FLAG = "-x"
-INPUT_TOPIC_FLAG = "-i"
+NO_OP_FLAG = "-n", "--no-op"
+DATA_SOURCE_FLAG = "-s", "--data-source"
+DATE_COLUMN_FLAG = "-d", "--date-column"
+OUTPUT_TOPIC_FLAG = "-t", "--output-topic"
+ROWS_LIMIT_FLAG = "-r", "--rows-limit"
+MAX_OFFSET_MINS_FLAG = "-m", "--max-offset-mins"
+MAX_SLEEP_SECONDS_FLAG = "-x", "--max-sleep-seconds"
+INPUT_TOPIC_FLAG = "-i", "--input-topic"
 
 # descriptions
 NO_OP_DESC = "dry run, does not perform any operation, purely for debugging"
@@ -23,8 +26,13 @@ INPUT_TOPIC_DESC = "pub/sub topic to read from"
 
 def setup_parser_main():
     parser = ArgumentParser(description="austin bikeshare data analysis pipeline")
-    parser.add_argument(NO_OP_FLAG, "--no-op", help=NO_OP_DESC, action="store_true")
-    parser.add_argument(INPUT_TOPIC_FLAG, "--input-topic", help=INPUT_TOPIC_DESC)
+    parser.add_argument(*NO_OP_FLAG, help=NO_OP_DESC, action="store_true")
+    parser.add_argument(
+        *INPUT_TOPIC_FLAG,
+        type=str,
+        default=env_config.get("TOPIC_ID"),
+        help=INPUT_TOPIC_DESC,
+    )
     args = parser.parse_known_args()
     return args
 
@@ -33,19 +41,42 @@ def setup_parser_publisher():
     parser = ArgumentParser(
         description="transforms existing data to simulate real time streaming data"
     )
-    parser.add_argument(NO_OP_FLAG, "--no-op", help=NO_OP_DESC, action="store_true")
-    parser.add_argument(DATA_SOURCE_FLAG, "--data-source", help=DATA_SOURCE_DESC)
-    parser.add_argument(DATE_COLUMN_FLAG, "--date-column", help=DATE_COLUMN_DESC)
-    parser.add_argument(OUTPUT_TOPIC_FLAG, "--output-topic", help=OUTPUT_TOPIC_DESC)
-    parser.add_argument(ROWS_LIMIT_FLAG, "--rows-limit", help=ROWS_LIMIT_DESC, type=int)
+    parser.add_argument(*NO_OP_FLAG, help=NO_OP_DESC, action="store_true")
     parser.add_argument(
-        MAX_OFFSET_MINS_FLAG, "--max-offset-mins", help=MAX_OFFSET_MINS_DESC, type=int
+        *DATA_SOURCE_FLAG,
+        type=str,
+        default=env_config.get("DATA_SOURCE"),
+        help=DATA_SOURCE_DESC,
     )
     parser.add_argument(
-        MAX_SLEEP_SECONDS_FLAG,
-        "--max-sleep-seconds",
-        help=MAX_SLEEP_SECONDS_DESC,
+        *DATE_COLUMN_FLAG,
+        type=str,
+        default=env_config.get("DATE_COLUMN"),
+        help=DATE_COLUMN_DESC,
+    )
+    parser.add_argument(
+        *OUTPUT_TOPIC_FLAG,
+        type=str,
+        default=env_config.get("TOPIC_ID"),
+        help=OUTPUT_TOPIC_DESC,
+    )
+    parser.add_argument(
+        *ROWS_LIMIT_FLAG,
         type=int,
+        default=int(env_config.get("ROWS_LIMIT") or 0),
+        help=ROWS_LIMIT_DESC,
+    )
+    parser.add_argument(
+        *MAX_OFFSET_MINS_FLAG,
+        type=int,
+        default=int(env_config.get("MAX_OFFSET_MINS") or 0),
+        help=MAX_OFFSET_MINS_DESC,
+    )
+    parser.add_argument(
+        *MAX_SLEEP_SECONDS_FLAG,
+        type=int,
+        default=int(env_config.get("MAX_SLEEP_SECONDS") or 0),
+        help=MAX_SLEEP_SECONDS_DESC,
     )
     args = parser.parse_known_args()
     return args
