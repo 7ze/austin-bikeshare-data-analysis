@@ -12,9 +12,17 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
 from apache_beam.options.pipeline_options import StandardOptions
 from utils.logger import setup_logger
+from datetime import datetime
 import json
 import sys
 import os
+
+
+class ParseTimestamp(beam.DoFn):
+    def process(self, element):
+        ts = element["start_time"]
+        element["start_time"] = datetime.fromisoformat(ts).timestamp()
+        yield element
 
 
 def run(pipeline_options, logger, input_topic):
@@ -24,6 +32,11 @@ def run(pipeline_options, logger, input_topic):
             pipeline
             | "Read from PubSub" >> beam.io.ReadFromPubSub(topic=input_topic)
             | "Parse data" >> beam.Map(lambda elem: json.loads(elem))
+            | "Parse timestamp" >> beam.ParDo(ParseTimestamp())
+            | "Add timestamp"
+            >> beam.Map(
+                lambda elem: beam.window.TimestampedValue(elem, elem["start_time"])
+            )
         )
 
         _ = data | "print data" >> beam.Map(print)
