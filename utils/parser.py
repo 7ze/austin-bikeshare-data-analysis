@@ -12,6 +12,8 @@ ROWS_LIMIT_FLAG = "-r", "--rows-limit"
 MAX_OFFSET_MINS_FLAG = "-m", "--max-offset-mins"
 MAX_SLEEP_SECONDS_FLAG = "-x", "--max-sleep-seconds"
 INPUT_TOPIC_FLAG = "-i", "--input-topic"
+BIGQUERY_DATASET_FLAG = "-b", "--bigquery-dataset"
+PROJECT_ID_FLAG = "-p", "--project-id"
 
 # descriptions
 NO_OP_DESC = "dry run, does not perform any operation, purely for debugging"
@@ -22,6 +24,8 @@ ROWS_LIMIT_DESC = "number of rows to query from data source"
 MAX_OFFSET_MINS_DESC = "maximum offset limit in minutes"
 MAX_SLEEP_SECONDS_DESC = "maximum sleep limit in seconds"
 INPUT_TOPIC_DESC = "pub/sub topic to read from"
+BIGQUERY_DATASET_DESC = "bigquery dataset to write to"
+PROJECT_ID_DESC = "project id to use"
 
 
 def setup_parser_main():
@@ -32,6 +36,18 @@ def setup_parser_main():
         type=str,
         default=env_config.get("TOPIC_ID"),
         help=INPUT_TOPIC_DESC,
+    )
+    parser.add_argument(
+        *BIGQUERY_DATASET_FLAG,
+        type=str,
+        default=env_config.get("BIGQUERY_DATASET"),
+        help=BIGQUERY_DATASET_DESC,
+    )
+    parser.add_argument(
+        *PROJECT_ID_FLAG,
+        type=str,
+        default=env_config.get("PROJECT_ID"),
+        help=PROJECT_ID_DESC,
     )
     args = parser.parse_known_args()
     return args
