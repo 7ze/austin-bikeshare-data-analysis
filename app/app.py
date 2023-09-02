@@ -1,3 +1,12 @@
+# to-do:
+
+# Subscriber Type Analysis:
+# Bike Usage Analysis:
+# Popular Stations and Routes:
+# Station Popularity Over Time:
+# Ride Patterns by Day of the Week:
+# Write to big query table:
+
 import apache_beam as beam
 from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import SetupOptions
@@ -14,8 +23,9 @@ def run(pipeline_options, logger, input_topic):
         data = (
             pipeline
             | "Read from PubSub" >> beam.io.ReadFromPubSub(topic=input_topic)
-            | "Parse data" >> beam.Map(lambda x: json.loads(x))
+            | "Parse data" >> beam.Map(lambda elem: json.loads(elem))
         )
+
         _ = data | "print data" >> beam.Map(print)
 
         result = pipeline.run()
@@ -49,24 +59,3 @@ def main(known_args, options):
 
     run(pipeline_options, logger, input_topic)
     logger.info("exiting app...")
-
-
-# to-do:
-# 1. handle the edge cases where in case of inactivity the pipeline should be
-# gracefully shutdown
-
-# Subscriber Type Analysis:
-# Popular Stations and Routes:
-# Duration Analysis:
-# Bike Usage Analysis:
-# Time-based Patterns:
-# Subscriber Behavior:
-# Station Popularity Over Time:
-# Subscriber Retention Analysis:
-# Bike Availability:
-# Subscriber Demographics (If Available):
-# Ride Patterns by Day of the Week:
-
-# 2. write to big query table:
-# add command line arguments to take in the table id
-# update no op mode to print the table id
