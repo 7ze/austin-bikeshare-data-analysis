@@ -6,15 +6,18 @@
 # Ride Patterns by Day of the Week:
 # Write to big query table:
 
-import apache_beam as beam
-from apache_beam.options.pipeline_options import PipelineOptions
-from apache_beam.options.pipeline_options import SetupOptions
-from apache_beam.options.pipeline_options import StandardOptions
-from utils.logger import setup_logger
-from datetime import datetime
-import json
-import sys
 import os
+import sys
+import json
+import apache_beam as beam
+from datetime import datetime
+from apache_beam.options.pipeline_options import SetupOptions
+from apache_beam.options.pipeline_options import PipelineOptions
+from apache_beam.options.pipeline_options import StandardOptions
+from app.subscriber_type import SubscriberTypeCount
+from app.subscriber_type import FormatSubscriberType
+from app.bigquery import WriteToBigQuery
+from utils.logger import setup_logger
 
 
 class ParseTimestamp(beam.DoFn):
@@ -26,77 +29,6 @@ class ParseTimestamp(beam.DoFn):
         ts = element["start_time"]
         element["start_time"] = datetime.fromisoformat(ts).timestamp()
         yield element
-
-
-class SubscriberTypeCount(beam.PTransform):
-    """Extracts the subscriber type from the input dictionary and outputs a
-    tuple of the subscriber type and a count of 1. The count can then be
-    aggregated to find the total number of trips by a subscriber type.
-    """
-
-    def __init__(self):
-        beam.PTransform.__init__(self)
-        self.window_duration = 1 * 60  # 1 minute
-
-    def expand(self, pcoll):
-        return (
-            pcoll
-            | "Window into fixed windows"
-            >> beam.WindowInto(
-                beam.window.FixedWindows(self.window_duration)  # pyright: ignore
-            )
-            | "Extract subscriber types"
-            >> beam.Map(lambda elem: (elem["subscriber_type"], 1))
-            | "Count subscriber types" >> beam.CombinePerKey(sum)  # pyright: ignore
-        )
-
-
-class FormatSubscriberType(beam.DoFn):
-    """Formats the subscriber type count into a dictionary."""
-
-    def process(self, element, window=beam.DoFn.WindowParam):
-        (subscriber_type, count) = element
-        start = window.start.to_utc_datetime().isoformat()  # pyright: ignore
-        end = window.end.to_utc_datetime().isoformat()  # pyright: ignore
-        yield {
-            "window_start": start,
-            "window_end": end,
-            "subscriber_type": subscriber_type,
-            "count": count,
-            "processing_time": datetime.utcnow().isoformat(),
-        }
-
-
-class WriteToBigQuery(beam.PTransform):
-    """Generate, format, and write BigQuery table row information."""
-
-    def __init__(self, table_name, dataset, schema, project):
-        """Initializes the transform.
-        Args:
-            table_name: Name of the BigQuery table to use.
-            dataset: Name of the dataset to use.
-            schema: Dictionary in the format {'column_name': 'bigquery_type'}
-            project: Name of the Cloud project containing BigQuery table.
-        """
-        beam.PTransform.__init__(self)
-        self.table_name = table_name
-        self.dataset = dataset
-        self.schema = schema
-        self.project = project
-
-    def get_schema(self):
-        """Build the output table schema."""
-        return ", ".join("%s:%s" % (col, self.schema[col]) for col in self.schema)
-
-    def expand(self, pcoll):
-        return (
-            pcoll
-            | "Convert to row"
-            >> beam.Map(lambda elem: {col: elem[col] for col in self.schema})
-            | beam.io.WriteToBigQuery(
-                self.table_name, self.dataset, self.project, self.get_schema()
-            )
-        )
 
 
 def run(pipeline_options, logger, input_topic, bigquery_dataset, project):
@@ -118,8 +50,8 @@ def run(pipeline_options, logger, input_topic, bigquery_dataset, project):
 
         subscriber_type_count = (  # pyright:ignore # noqa
             data
-            | "Extract subscriber type trips count" >> SubscriberTypeCount()
-            | "Format subscriber type trips count" >> beam.ParDo(FormatSubscriberType())
+            | "Extract and find subscriber type count" >> SubscriberTypeCount()
+            | "Format subscriber type count" >> beam.ParDo(FormatSubscriberType())
             | "Write results to BigQuery"
             >> WriteToBigQuery(
                 "subscriber_type_count",
