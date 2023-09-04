@@ -1,4 +1,5 @@
-"""A helper class which contains the logic to translate the user's custom
+"""
+A helper class which contains the logic to translate the user's custom
 dict into a BigQuery table row and then write it to BigQuery.
 """
 

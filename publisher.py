@@ -7,7 +7,7 @@ is randomly offset to create a time difference. The script supports command-line
 arguments and configuration via a .env file.
 
 Usage:
-    python main.py [--data-source DATA_SOURCE] [--date-column DATE_COLUMN]
+    python3 publisher.py [--data-source DATA_SOURCE] [--date-column DATE_COLUMN]
                   [--rows-limit ROWS_LIMIT] [--max-offset-mins MAX_OFFSET_MINS]
                   [--output-topic OUTPUT_TOPIC] [--max-sleep-seconds MAX_SLEEP_SECONDS] 
                   [--no-op]

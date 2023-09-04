@@ -1,3 +1,8 @@
+"""
+This module contains the configuration for the parser for the command line
+arguments.
+"""
+
 from argparse import ArgumentParser
 from dotenv import dotenv_values
 

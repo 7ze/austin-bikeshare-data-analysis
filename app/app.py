@@ -1,10 +1,8 @@
-# to-do:
-
-# Bike Usage Analysis:
-# Popular Stations and Routes:
-# Station Popularity Over Time:
-# Ride Patterns by Day of the Week:
-# Write to big query table:
+"""
+This module contains the main application logic for the streaming pipeline.
+The pipeline reads data from a Pub/Sub topic, transforms the data, and writes
+the results to BigQuery. The pipeline is designed to run on Dataflow.
+"""
 
 import os
 import sys
@@ -16,6 +14,8 @@ from apache_beam.options.pipeline_options import PipelineOptions
 from apache_beam.options.pipeline_options import StandardOptions
 from app.subscriber_type import SubscriberTypeCount
 from app.subscriber_type import FormatSubscriberType
+from app.bike_type import BikeTypeCount
+from app.bike_type import FormatBikeType
 from app.bigquery import WriteToBigQuery
 from utils.logger import setup_logger
 
@@ -48,11 +48,13 @@ def run(pipeline_options, logger, input_topic, bigquery_dataset, project):
             )
         )
 
+        # _ = data | "Print data" >> beam.Map(logger.debug)
+
         subscriber_type_count = (  # pyright:ignore # noqa
             data
             | "Extract and find subscriber type count" >> SubscriberTypeCount()
             | "Format subscriber type count" >> beam.ParDo(FormatSubscriberType())
-            | "Write results to BigQuery"
+            | "Write subscriber type count results to BigQuery"
             >> WriteToBigQuery(
                 "subscriber_type_count",
                 bigquery_dataset,
@@ -67,8 +69,28 @@ def run(pipeline_options, logger, input_topic, bigquery_dataset, project):
             )
         )
 
+        bike_type_count = (  # pyright:ignore # noqa
+            data
+            | "Extract and find bike type count" >> BikeTypeCount()
+            | "Format bike type count" >> beam.ParDo(FormatBikeType())
+            | "Write bike type count results to BigQuery"
+            >> WriteToBigQuery(
+                "bike_type_count",
+                bigquery_dataset,
+                {
+                    "window_start": "STRING",
+                    "window_end": "STRING",
+                    "bike_type": "STRING",
+                    "count": "INTEGER",
+                    "processing_time": "STRING",
+                },
+                project,
+            )
+        )
+
         result = pipeline.run()
         result.wait_until_finish()
+
     except KeyboardInterrupt:
         logger.warning("Interrupted.")
         logger.info("Stopping pipeline...")
@@ -95,8 +117,8 @@ def main(known_args, options):
         print("Configuration values are as follows:")
         print("------------------------------------\n")
         print(f"Input Pub/Sub topic:        {input_topic}")
-        print(f"Project ID:                 {project_id}\n")
-        print(f"Output BigQuery dataset:    {bigquery_dataset}")
+        print(f"Project ID:                 {project_id}")
+        print(f"Output BigQuery dataset:    {bigquery_dataset}\n")
         sys.exit(0)
 
     run(pipeline_options, logger, input_topic, bigquery_dataset, project_id)

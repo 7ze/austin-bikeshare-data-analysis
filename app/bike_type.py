@@ -1,24 +1,25 @@
 """
 This module contains a pipeline that calculates the number of trips by
-subscriber type in a given time window.
+bike type in a given time window.
 """
 
 import apache_beam as beam
 from datetime import datetime
 
+
 # initialize constants
-SUBSCRIBER_TYPE_WINDOW_DURATION = 1 * 60  # 1 minute
+BIKE_TYPE_WINDOW_DURATION = 1 * 60  # 1 minute
 
 
-class SubscriberTypeCount(beam.PTransform):
-    """Extracts the subscriber type from the input dictionary and outputs a
-    tuple of the subscriber type and a count of 1. The count can then be
-    aggregated to find the total number of trips by a subscriber type.
+class BikeTypeCount(beam.PTransform):
+    """Extracts the bike type from the input dictionary and outputs a
+    tuple of the bike type and a count of 1. The count can then be
+    aggregated to find the total number of trips by a bike type.
     """
 
     def __init__(self):
         beam.PTransform.__init__(self)
-        self.window_duration = SUBSCRIBER_TYPE_WINDOW_DURATION
+        self.window_duration = BIKE_TYPE_WINDOW_DURATION
 
     def expand(self, pcoll):
         return (
@@ -27,23 +28,22 @@ class SubscriberTypeCount(beam.PTransform):
             >> beam.WindowInto(
                 beam.window.FixedWindows(self.window_duration)  # pyright: ignore
             )
-            | "Extract subscriber types"
-            >> beam.Map(lambda elem: (elem["subscriber_type"], 1))
-            | "Count subscriber types" >> beam.CombinePerKey(sum)  # pyright: ignore
+            | "Extract bike types" >> beam.Map(lambda elem: (elem["bike_type"], 1))
+            | "Count bike types" >> beam.CombinePerKey(sum)  # pyright: ignore
         )
 
 
-class FormatSubscriberType(beam.DoFn):
-    """Formats the subscriber type count into a dictionary."""
+class FormatBikeType(beam.DoFn):
+    """Formats the bike data count into a dictionary."""
 
     def process(self, element, window=beam.DoFn.WindowParam):
-        (subscriber_type, count) = element
+        (bike_type, count) = element
         start = window.start.to_utc_datetime().isoformat()  # pyright: ignore
         end = window.end.to_utc_datetime().isoformat()  # pyright: ignore
         yield {
             "window_start": start,
             "window_end": end,
-            "subscriber_type": subscriber_type,
+            "bike_type": bike_type,
             "count": count,
             "processing_time": datetime.utcnow().isoformat(),
         }
