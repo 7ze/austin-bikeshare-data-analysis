@@ -1,3 +1,8 @@
+"""
+This module is used to setup the logger for the project.
+The logger features a custom formatter that adds color to the output.
+"""
+
 import logging
 from dotenv import dotenv_values
 

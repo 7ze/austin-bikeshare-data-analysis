@@ -13,97 +13,68 @@ As a part of Stream Processing and Stream Analytics project.
 >up-to-date details, certain aspects of the project may be modified, added, or
 >removed as development progresses.
 
-### Analysis Summary
+### Set up Project
 ---
 
-This project aims to conduct comprehensive data analysis on Austin Bikeshare
-trips using real-time streaming data. Through advanced data transformations and
-insights generation, this analysis seeks to uncover valuable patterns and
-trends that can inform decision-making and operational improvements within the
-bikeshare system.
+Follow along these steps to set up the project and start the publisher and
+pipeline.
 
-#### Analysis Ideas
+#### 1. Clone and setup up requirements
 
-1. *Subscriber Type Analysis:*
-   - Explore the distribution of subscriber types (e.g., Pay-as-you-ride,
-     Local365).
-   - Identify trends in usage patterns based on different subscriber
-     categories.
-   
-2. *Popular Stations and Routes:*
-   - Determine the most frequently used start and end stations.
-   - Uncover common routes taken by bikeshare users for optimization.
+```sh
+git clone https://github.com/7ze/austin-bikeshare-data-analysis.git
+cd austin-bikeshare-data-analysis # project's root folder
 
-3. *Duration Analysis:*
-   - Analyze trip durations to understand average length and identify
-     exceptional cases.
-   - Explore correlations between trip duration and other factors.
+python3 -m venv env # set up virtual env
+pip3 install -U pip # update pip
 
-4. *Bike Usage Analysis:*
-   - Investigate bike usage patterns to identify popular bikes and maintenance
-     trends.
-   - Examine the relationship between bike type and usage frequency.
+pip3 install -r requirements.txt # install requirements
+```
 
-5. *Time-based Patterns:*
-   - Study usage patterns based on time of day, weekdays vs. weekends, and
-     months.
-   - Identify peak usage hours and seasonal trends.
+#### 2. Set up environment file
 
-6. *Subscriber Behavior:*
-   - Analyze how subscriber types influence trip behaviors such as trip
-     duration and station choices.
-   - Determine if different subscriber types have distinct usage patterns.
+```sh
+touch .env
+```
 
-7. *Station Popularity Over Time:*
-   - Track popularity changes of specific stations over time.
-   - Investigate factors influencing shifts in station popularity.
+and add these environment variables in your `.env` file as shown
 
-8. *Subscriber Retention Analysis:*
-   - Explore whether different subscriber types exhibit varying retention
-     rates.
-   - Understand which types of users tend to continue using the service over
-     time.
+```sh
+PROJECT_ID="<your project id>"
+BUCKET_NAME="<your google storage bucket name>"
+TOPIC_ID="<your pubsub topic id>"
+BIGQUERY_DATASET="<biguery dataset name from which you wish to query>"
+DATA_SOURCE="<your big query dataset name to which you wish to write results>"
+DATE_COLUMN="<name of the column which has event timestamps you wish to transform>"
+MAX_OFFSET_MINS="<max offset in minutes between current time and message timestamp>"
+MAX_SLEEP_SECONDS="<max time to sleep between publishing messages>"
+ROWS_LIMIT="<max number of rows to query at a time>"
+```
 
-9. *Bike Availability:*
-   - Investigate bike availability at stations and its impact on user behavior.
-   - Analyze how bike availability affects station popularity.
+At this point you can inspect around and make the changes you wish to make.
 
-10. *Subscriber Demographics (If Available):*
-    - Correlate subscriber types with demographic information if available.
-    - Understand if certain types of users are more likely to use the service.
+#### 3. Run the publisher
 
-11. *Ride Patterns by Day of the Week:*
-    - Observe how usage patterns change across different days of the week.
-    - Determine if certain days have higher usage due to specific events or
-      reasons.
+```sh
+# Run with -n or --no-op option enabled to see the config options set
+# helpful in case you wish to debug
 
-#### Final Dataset Schema idea
+python3 publisher.py
+```
 
-```plaintext 
-Table: analysis
+#### 4. Run the pipeline
 
-Fields:
-- trip_id: STRING (Primary Key)
-- subscriber_type: STRING
-- bike_id: STRING
-- bike_type: STRING
-- start_time: TIMESTAMP
-- start_station_id: INTEGER
-- start_station_name: STRING
-- end_station_id: INTEGER
-- end_station_name: STRING
-- duration_minutes: INTEGER
-- day_of_week: INTEGER
-- hour_of_day: INTEGER
-- month: INTEGER
-- route: STRING
-- is_weekend: BOOLEAN
-- is_peak_hour: BOOLEAN
-- subscriber_demographics: STRING
-- subscriber_retention: BOOLEAN
-- bike_availability: INTEGER
-- station_popularity: INTEGER
-- ...
+```sh
+./run.sh # custom run script
+```
 
-Indexes:
-- trip_id (Primary Key) ```
+Alternatively, you could also run the pipeline manually with custom options
+
+```sh
+# Run with -n or --no-op option enabled to see the config options set
+# helpful in case you wish to debug
+
+python3 main.py
+```
+
+#### And voilà, you have the pipeline running!
