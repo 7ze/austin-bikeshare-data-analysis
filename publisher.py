@@ -36,6 +36,7 @@ import random
 import json
 import time
 import sys
+import os
 
 
 def sleep_random(max_sleep_seconds):
@@ -82,6 +83,15 @@ def transform_and_publish(
             print(row)
             sleep_random(max_sleep_mins)  # sleep randomly to simulate real-time data
             print("Published message to Pub/Sub topic.")
+
+    except KeyboardInterrupt:
+        print("Interrupted.")
+        print("Stopping publisher...")
+        try:
+            sys.exit(0)
+        except SystemExit:
+            os._exit(0)
+
     except Exception as e:
         print(f"Error transforming and publishing data: {e}")
         return
