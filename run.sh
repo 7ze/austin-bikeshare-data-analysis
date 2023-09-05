@@ -2,8 +2,16 @@
 
 # exit if not run from project root directory
 [ ! -f "pyproject.toml" ] && echo "run command from project root directory!" && exit 1
+
 # activate virtual environment
-. env/bin/activate
+# check platform
+uname="$(uname)" # unix based systems
+if [ "$uname" = "Linux" ] || [ "$uname" = "Darwin" ]; then
+    . env/bin/activate
+else # windows; why tf are you using windows anyway?
+    . env/Scripts/activate
+fi
+
 # run script with no op
 python3 main.py -n
 
